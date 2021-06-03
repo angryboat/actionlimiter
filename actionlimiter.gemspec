@@ -7,15 +7,14 @@ Gem::Specification.new do |spec|
   spec.version       = ActionLimiter::VERSION
   spec.authors       = ['Maddie Schipper']
   spec.email         = ['maddie@angryboat.com']
-
   spec.summary       = 'Redis backed request rate limiter'
   spec.description   = 'Redis backed request rate limiter'
   spec.homepage      = 'https://github.com/angryboat/actionlimiter'
   spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.7.0')
 
-  spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com'"
+  spec.required_ruby_version = Gem::Requirement.new('>= 2.6.0')
 
+  spec.metadata['allowed_push_host'] = 'https://rubygems.org'
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
   spec.metadata['changelog_uri'] = spec.homepage
