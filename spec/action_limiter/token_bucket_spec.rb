@@ -8,8 +8,8 @@ RSpec.describe ActionLimiter::TokenBucket do
 
   describe '#increment' do
     it 'increments the number of events in the bucket' do
-      first_count = instance.increment(key, Time.now)
-      second_count = instance.increment(key, Time.now)
+      first_count = instance.increment(key, Time.now).value
+      second_count = instance.increment(key, Time.now).value
 
       expect(first_count).to eq 1
       expect(second_count).to eq 2

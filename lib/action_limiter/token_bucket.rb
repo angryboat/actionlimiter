@@ -11,6 +11,8 @@ module ActionLimiter
   # @author Maddie Schipper
   # @since 0.1.0
   class TokenBucket
+    Bucket = Struct.new(:name, :value)
+
     ##
     # The period length for the bucket in seconds
     #
@@ -52,7 +54,7 @@ module ActionLimiter
     #
     # @return [true, false] The limiting status of the bucket
     def limited?(bucket, time: Time.now)
-      increment(bucket, time) > size
+      increment(bucket, time).value > size
     end
 
     ##
@@ -62,7 +64,8 @@ module ActionLimiter
         ActionLimiter.connection_pool.with do |connection|
           time_stamp = time.to_f
           bucket_key = "#{namespace}/#{bucket}"
-          connection.evalsha(@script_hash, [bucket_key], [period.to_s, time_stamp.to_s])
+          value = connection.evalsha(@script_hash, [bucket_key], [period.to_s, time_stamp.to_s])
+          Bucket.new(bucket, value)
         end
       end
     end

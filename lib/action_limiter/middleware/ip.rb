@@ -10,53 +10,71 @@ module ActionLimiter
     class IP
       ##
       # @private
-      MUTEX = Mutex.new
-
-      ##
-      # @private
-      def self.period(period = nil)
-        MUTEX.synchronize do
-          @period = period unless period.nil?
-          @period || 1
-        end
-      end
-
-      ##
-      # @private
-      def self.bucket_size(bucket_size = nil)
-        MUTEX.synchronize do
-          @bucket_size = bucket_size unless bucket_size.nil?
-          @bucket_size || 100
-        end
-      end
-
-      ##
-      # @private
-      def initialize(app)
+      def initialize(app, options = {})
         @app = app
+        @response_body = options.fetch(:response_body) { create_response_body }
+        @headers = Hash(options.fetch(:headers, {})).dup
         @token_bucket = ActionLimiter::TokenBucket.new(
-          period: self.class.period,
-          size: self.class.bucket_size,
-          namespace: 'action_limiter/middleware/ip'
+          period: options.fetch(:period, 1),
+          size: options.fetch(:size, 100),
+          namespace: options.fetch(:namespace, 'action_limiter/middleware/ip')
         )
       end
 
       ##
       # @private
       def call(env)
-        request_ip = Digest::MD5.hexdigest(env.ip)
+        remote_ip = env.fetch('action_dispatch.remote_ip')
+        bucket_key = Digest::MD5.hexdigest(remote_ip.to_s)
+        bucket = @token_bucket.increment(bucket_key, Time.now)
 
-        if @token_bucket.limited?(request_ip)
-          rate_limited_response
+        if bucket.value > @token_bucket.size
+          rate_limited_response(bucket)
         else
-          @app.call(env)
+          status, headers, body = @app.call(env)
+
+          headers.merge!(rate_limit_headers(bucket))
+
+          [status, headers, body]
         end
       end
 
       private
 
-      def rate_limited_response
-        [429, {}, {}]
+      def response_body(bucket)
+        if @response_body.respond_to?(:call)
+          @response_body.call(bucket)
+        else
+          @response_body
+        end
+      end
+
+      def create_response_body
+        <<~BODY
+          <html>
+            <body>
+              <h1>Too Many Requests</h1>
+            </body>
+          </html>
+        BODY
+      end
+
+      def rate_limit_headers(bucket)
+        {
+          'X-Request-Count' => bucket.value.to_s,
+          'X-Request-Period' => @token_bucket.period.to_s,
+          'X-Request-Limit' => @token_bucket.size.to_s
+        }
+      end
+
+      def response_headers(bucket)
+        @headers['Content-Type'] = 'text/html' unless @headers.key?('Content-Type')
+
+        @headers.merge(rate_limit_headers(bucket))
+      end
+
+      def rate_limited_response(bucket)
+        [429, response_headers(bucket), [response_body(bucket)]]
       end
     end
   end
