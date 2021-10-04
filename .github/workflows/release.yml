@@ -19,4 +19,3 @@ jobs:
         uses: angryboat/publish-gem@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          rubygems_token: ${{ secrets.RUBYGEMS_PUBLISH_KEY }}
