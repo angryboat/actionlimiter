@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'https://github.com/angryboat/actionlimiter'
   spec.license       = 'MIT'
 
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.6.0')
+  spec.required_ruby_version = Gem::Requirement.new('>= 2.7.0')
 
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
   spec.metadata['homepage_uri'] = spec.homepage
@@ -25,5 +25,5 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'connection_pool', '>= 2.0', '< 3.0'
-  spec.add_dependency 'redis', '>= 4.0', '< 5.0'
+  spec.add_dependency 'redis',           '>= 4.0', '< 5.0'
 end

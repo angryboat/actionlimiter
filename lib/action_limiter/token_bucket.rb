@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'action_limiter/instrumentation'
-require 'action_limiter/redis'
+require 'action_limiter/redis_provider'
 require 'action_limiter/scripts'
 
 module ActionLimiter
@@ -41,7 +41,7 @@ module ActionLimiter
       @period = period.to_i
       @size = size.to_i
       @namespace = namespace&.to_s || 'action_limiter/token_bucket'
-      @script_hash = ActionLimiter.connection_pool.with do |connection|
+      @script_hash = ActionLimiter::RedisProvider.connection_pool.with do |connection|
         connection.script(:load, ActionLimiter::SCRIPTS.fetch(:token_bucket))
       end
     end
@@ -61,7 +61,7 @@ module ActionLimiter
     # @private
     def increment(bucket, time)
       ActionLimiter.instrument('action_limiter.token_bucket.increment') do
-        ActionLimiter.connection_pool.with do |connection|
+        ActionLimiter::RedisProvider.connection_pool.with do |connection|
           time_stamp = time.to_f
           bucket_key = "#{namespace}/#{bucket}"
           value = connection.evalsha(@script_hash, [bucket_key], [period.to_s, time_stamp.to_s])
