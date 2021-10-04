@@ -16,6 +16,6 @@ jobs:
           bundler-cache: true
           ruby-version: 2.7
       - name:
-        uses: angryboat/publish-gem@main
+        uses: dawidd6/action-publish-gem@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
