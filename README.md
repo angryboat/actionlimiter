@@ -1,43 +1,26 @@
 # ActionLimiter
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/actionlimiter`. To experiment with that code, run `bin/console` for an interactive prompt.
+[![Unit Test](https://github.com/angryboat/actionlimiter/actions/workflows/testing.yml/badge.svg)](https://github.com/angryboat/actionlimiter/actions/workflows/testing.yml) [![Linters](https://github.com/angryboat/actionlimiter/actions/workflows/linting.yml/badge.svg)](https://github.com/angryboat/actionlimiter/actions/workflows/linting.yml)
 
-TODO: Delete this and the text above, and describe your gem
+Provides Redis backed rate limiting for Rails applications.
 
-## Installation
-
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'actionlimiter'
-```
-
-And then execute:
-
-```shell
-bundle install
-```
-
-Or install it yourself as:
+## Installing
 
 ```shell
 gem install actionlimiter
 ```
 
-## Development
+```shell
+bundler add actionlimiter
+```
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+## Usage
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+### Rails IP Middleware
 
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at <https://github.com/angryboat/actionlimiter>. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/angryboat/actionlimiter/blob/main/CODE_OF_CONDUCT.md).
-
-## License
-
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the Actionlimiter project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/angryboat/actionlimiter/blob/main/CODE_OF_CONDUCT.md).
+```ruby
+Rails.application.configure do |config|
+  # Limit a single IP to 20 requests in a 5 second period.
+  config.middleware.use(ActionLimiter::Middleware::IP, period: 5, size: 20)
+end
+```
