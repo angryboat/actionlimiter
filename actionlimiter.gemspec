@@ -7,10 +7,12 @@ Gem::Specification.new do |spec|
   spec.version       = ActionLimiter::VERSION
   spec.authors       = ['Maddie Schipper']
   spec.email         = ['maddie@angryboat.com']
-  spec.summary       = 'Redis backed request rate limiter'
-  spec.description   = 'Redis backed request rate limiter'
+  spec.summary       = 'Rate Limiting'
   spec.homepage      = 'https://github.com/angryboat/actionlimiter'
   spec.license       = 'MIT'
+  spec.description   = <<~END_DESC
+    Redis backed token bucket rate limting implementation.
+  END_DESC
 
   spec.required_ruby_version = Gem::Requirement.new('>= 2.7.0')
 

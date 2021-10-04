@@ -3,5 +3,5 @@
 module ActionLimiter
   ##
   # The current version number
-  VERSION = '0.2.0'
+  VERSION = '1.0.0.beta1'
 end
