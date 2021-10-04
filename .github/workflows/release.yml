@@ -1,0 +1,22 @@
+name: Release
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch: {}
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Setup Ruby and install gems
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          ruby-version: 2.7
+      - name:
+        uses: angryboat/publish-gem@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          rubygems_token: ${{ secrets.RUBYGEMS_PUBLISH_KEY }}
