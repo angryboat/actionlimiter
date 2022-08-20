@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
+require 'action_limiter/config'
 require 'action_limiter/instrumentation'
-require 'action_limiter/redis_provider'
 require 'action_limiter/scripts'
 
 module ActionLimiter
@@ -11,7 +11,9 @@ module ActionLimiter
   # @author Maddie Schipper
   # @since 0.1.0
   class TokenBucket
-    Bucket = Struct.new(:name, :value)
+    ##
+    # @private
+    Bucket = Struct.new(:name, :value, :max_size, :period, keyword_init: true)
 
     ##
     # The period length for the bucket in seconds
@@ -41,7 +43,7 @@ module ActionLimiter
       @period = period.to_i
       @size = size.to_i
       @namespace = namespace&.to_s || 'action_limiter/token_bucket'
-      @script_hash = ActionLimiter::RedisProvider.connection_pool.with do |connection|
+      @script_hash = ActionLimiter.with_redis_connection do |connection|
         connection.script(:load, ActionLimiter::SCRIPTS.fetch(:token_bucket))
       end
     end
@@ -54,20 +56,38 @@ module ActionLimiter
     #
     # @return [true, false] The limiting status of the bucket
     def limited?(bucket, time: Time.now)
-      increment(bucket, time).value > size
+      increment_and_return_bucket(bucket, time).value > size
+    end
+
+    ##
+    # Delete a bucket's current value
+    #
+    # @param bucket [String] The name of the bucket to delete
+    #
+    # @return [void]
+    def delete(bucket)
+      ActionLimiter.instrument('action_limiter.token_bucket.reset') do
+        ActionLimiter.with_redis_connection do |connection|
+          connection.del(bucket_key(bucket))
+        end
+      end
     end
 
     ##
     # @private
-    def increment(bucket, time)
+    def increment_and_return_bucket(bucket, time)
       ActionLimiter.instrument('action_limiter.token_bucket.increment') do
-        ActionLimiter::RedisProvider.connection_pool.with do |connection|
-          time_stamp = time.to_f
-          bucket_key = "#{namespace}/#{bucket}"
-          value = connection.evalsha(@script_hash, [bucket_key], [period.to_s, time_stamp.to_s])
-          Bucket.new(bucket, value)
+        ActionLimiter.with_redis_connection do |connection|
+          value = connection.evalsha(@script_hash, [bucket_key(bucket)], [period.to_s, time.to_f])
+          Bucket.new(name: bucket, value: value, max_size: size, period: period)
         end
       end
+    end
+
+    private
+
+    def bucket_key(bucket)
+      "#{namespace}/#{bucket}"
     end
   end
 end

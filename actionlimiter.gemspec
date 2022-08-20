@@ -14,9 +14,10 @@ Gem::Specification.new do |spec|
     Redis backed token bucket rate limting implementation.
   END_DESC
 
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.7.0')
+  spec.required_ruby_version = Gem::Requirement.new('>= 2.7')
 
   spec.metadata['allowed_push_host'] = 'https://rubygems.pkg.github.com/angryboat'
+  spec.metadata['rubygems_mfa_required'] = 'true'
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
   spec.metadata['changelog_uri'] = spec.homepage
