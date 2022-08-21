@@ -1,6 +1,6 @@
 # ActionLimiter
 
-[![Unit Test](https://github.com/angryboat/actionlimiter/actions/workflows/testing.yml/badge.svg)](https://github.com/angryboat/actionlimiter/actions/workflows/testing.yml) [![Linters](https://github.com/angryboat/actionlimiter/actions/workflows/linting.yml/badge.svg)](https://github.com/angryboat/actionlimiter/actions/workflows/linting.yml)
+[![Ruby Gem](https://github.com/angryboat/actionlimiter/actions/workflows/ruby-gem.yml/badge.svg?event=push)](https://github.com/angryboat/actionlimiter/actions/workflows/ruby-gem.yml)
 
 Provides Redis backed rate limiting for Rails applications.
 
