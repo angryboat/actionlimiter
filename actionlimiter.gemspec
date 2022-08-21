@@ -29,4 +29,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'connection_pool', '>= 2.0', '< 3.0'
   spec.add_dependency 'redis',           '>= 4.0', '< 5.0'
+
+  spec.add_development_dependency 'pry'
 end

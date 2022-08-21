@@ -13,6 +13,6 @@ local bucket_name = KEYS[1]
 
 redis.call('ZREMRANGEBYSCORE', bucket_name, '-inf', min)
 redis.call('ZADD', bucket_name, ts, ts)
-redis.call('EXPIRE', bucket_name, period * 5)
+redis.call('EXPIRE', bucket_name, period + 2)
 
 return redis.call('ZCARD', bucket_name)
