@@ -62,4 +62,12 @@ jobs:
           ruby-version: 2.7
           bundler-cache: true
       - run: >-
-          bundle exec release
+          mkdir -p ~/.gem
+
+          cat << EOF > ~/.gem/credentials
+          ---
+          :github: Bearer ${{ secrets.GITHUB_TOKEN }}
+          :rubygems_api_key: ${{ secrets.RUBYGEMS_PUBLISH_KEY }}
+          EOF
+
+          bundle exec rake release
