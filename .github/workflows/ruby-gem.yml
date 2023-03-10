@@ -9,7 +9,7 @@ jobs:
   unit-testing:
     strategy:
       matrix:
-        ruby-version: [2.7, 3.1]
+        ruby-version: [2.7, 3.1, 3.2]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     services:
