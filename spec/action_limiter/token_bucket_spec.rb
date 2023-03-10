@@ -6,10 +6,10 @@ RSpec.describe ActionLimiter::TokenBucket do
   let(:instance) { described_class.new(period: 1, size: 5) }
   let(:key) { "token-bucket-test-#{rand(1_000...1_000_000)}" }
 
-  describe '#increment_and_return_bucket' do
+  describe '#increment' do
     it 'increments the number of events in the bucket' do
-      first_count = instance.increment_and_return_bucket(key, Time.now).value
-      second_count = instance.increment_and_return_bucket(key, Time.now).value
+      first_count = instance.increment(key).value
+      second_count = instance.increment(key).value
 
       expect(first_count).to eq 1
       expect(second_count).to eq 2
@@ -29,11 +29,11 @@ RSpec.describe ActionLimiter::TokenBucket do
 
   describe '#delete' do
     it 'delete the bucket value' do
-      expect(instance.increment_and_return_bucket('key_one', Time.now).value).to eq 1
-      expect(instance.increment_and_return_bucket('key_two', Time.now).value).to eq 1
+      expect(instance.increment('key_one').value).to eq 1
+      expect(instance.increment('key_two').value).to eq 1
       instance.delete('key_one')
-      expect(instance.increment_and_return_bucket('key_one', Time.now).value).to eq 1
-      expect(instance.increment_and_return_bucket('key_two', Time.now).value).to eq 2
+      expect(instance.increment('key_one').value).to eq 1
+      expect(instance.increment('key_two').value).to eq 2
     end
   end
 end
