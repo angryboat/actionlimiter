@@ -16,6 +16,14 @@ bundle add actionlimiter
 
 ## Usage
 
+### Set Redis URL
+
+```ruby
+Rails.application.configure do |config|
+  config.redis = { url: 'redis://localhost:6379/0' }
+end
+```
+
 ### Rails IP Middleware
 
 ```ruby

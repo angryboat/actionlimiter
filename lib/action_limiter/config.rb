@@ -45,6 +45,10 @@ module ActionLimiter # rubocop:disable Style/Documentation
       end
     end
 
+    def redis=(redis)
+      self.redis_config = RedisClient.config(**redis)
+    end
+
     ##
     # Sets the Redis configuration for the connection pool.
     #
