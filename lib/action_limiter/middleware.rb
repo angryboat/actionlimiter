@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
-require 'action_limiter/middleware/ip'
+begin
+  require 'rack'
+rescue LoadError
+  # no-op
+end
+
+require 'action_limiter/middleware/ip' if defined?(Rack)
 
 module ActionLimiter
   ##

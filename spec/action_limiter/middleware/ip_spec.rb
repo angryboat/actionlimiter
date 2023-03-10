@@ -9,13 +9,13 @@ RSpec.describe ActionLimiter::Middleware::IP do
 
   let(:env) do
     {
-      'action_dispatch.remote_ip' => SecureRandom.hex(16)
+      'REMOTE_ADDR' => SecureRandom.hex(16)
     }
   end
 
-  let(:app) { double('next-app') }
+  let(:app) { double('next app') }
 
-  let(:response_builder) { double('response_builder') }
+  let(:response_builder) { double('response builder') }
 
   let(:instance) do
     described_class.new(app, response_builder:, period: 1, size: 1)
@@ -40,6 +40,25 @@ RSpec.describe ActionLimiter::Middleware::IP do
       expect(response_builder).to receive(:call).with(env).and_return(response)
 
       instance.call(env)
+    end
+
+    context 'when the request path matches an exclustion path' do
+      let(:instance) do
+        described_class.new(app, response_builder:, period: 1, size: 0, exclusions: [%r{\A/foo}])
+      end
+
+      let(:env) do
+        {
+          'REMOTE_ADDR' => '127.0.0.1',
+          'PATH_INFO' => '/foo/bar'
+        }
+      end
+
+      it 'should call the next middleware' do
+        expect(app).to receive(:call).with(env)
+
+        instance.call(env)
+      end
     end
   end
 end
