@@ -12,8 +12,28 @@ module ActionLimiter
   # @since 0.1.0
   class TokenBucket
     ##
-    # @private
-    Bucket = Struct.new(:name, :value, :max_size, :period, keyword_init: true)
+    # Bucket contains information about a single bucket in a TokenBucket.
+    #
+    # @attr_reader [String] name A string representing the name of the bucket.
+    # @attr_reader [Integer] value An integer representing the current value of the bucket.
+    # @attr_reader [Integer] max_size An integer representing the maximum value of the bucket.
+    # @attr_reader [Integer] period An integer representing the period (in seconds) for which the bucket should retain its value.
+    #
+    # @example Checking if a bucket is limited
+    #   # Increment the "user:1" bucket and get its value
+    #   bucket = ActionLimiter::TokenBucket.new(period: 5, size: 20).increment('user:1').value
+    #
+    #   # Check if the bucket is limited
+    #   if bucket.limited?
+    #     # Do something if the bucket is limited
+    #   else
+    #     # Do something if the bucket is not limited
+    #   end
+    Bucket = Struct.new(:name, :value, :max_size, :period, keyword_init: true) do
+      def limited?
+        value > max_size # Not >= because the request that created this bucket incremented the counter
+      end
+    end
 
     ##
     # The period length for the bucket in seconds
@@ -53,7 +73,31 @@ module ActionLimiter
     #
     # @return [true, false] The limiting status of the bucket
     def limited?(bucket, time: Time.now)
-      increment_and_return_bucket(bucket, time).value > size
+      increment(bucket, time:).limited?
+    end
+
+    # This method is defined in the `ActionLimiter::TokenBucket` class and is
+    # used to increment a bucket's value and return it as a `Bucket` struct.
+    #
+    # @param bucket [String] A string representing the name of the bucket to
+    # increment. @param time [Time] (optional) A `Time` object representing the
+    #   time of the increment. If not specified, the current time will be used.
+    #
+    # @return [ActionLimiter::TokenBucket::Bucket] A `Bucket` struct containing
+    # the name, value, max size, and period of the bucket.
+    #
+    # @example Incrementing a bucket's value
+    #   # Initialize a new token bucket with a period of 5 seconds and a size of 20
+    #   bucket = ActionLimiter::TokenBucket.new(period: 5, size: 20)
+    #
+    #   # Increment the "user:1" bucket and get its value
+    #   bucket_value = bucket.increment('user:1').value
+
+    def increment(bucket, time: Time.now)
+      ActionLimiter.instrument('action_limiter.token_bucket.increment') do
+        value = ActionLimiter.redis.call('EVALSHA', script_hash, 1, bucket_key(bucket), period.to_s, time.to_f.to_s)
+        Bucket.new(name: bucket, value:, max_size: size, period:)
+      end
     end
 
     ##
@@ -65,15 +109,6 @@ module ActionLimiter
     def delete(bucket)
       ActionLimiter.instrument('action_limiter.token_bucket.reset') do
         ActionLimiter.redis.call('DEL', bucket_key(bucket))
-      end
-    end
-
-    ##
-    # @private
-    def increment_and_return_bucket(bucket, time)
-      ActionLimiter.instrument('action_limiter.token_bucket.increment') do
-        value = ActionLimiter.redis.call('EVALSHA', script_hash, 1, bucket_key(bucket), period.to_s, time.to_f.to_s)
-        Bucket.new(name: bucket, value:, max_size: size, period:)
       end
     end
 

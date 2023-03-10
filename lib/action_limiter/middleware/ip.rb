@@ -63,7 +63,7 @@ module ActionLimiter
       def _call(env)
         remote_ip = env.fetch('action_dispatch.remote_ip')
         bucket_key = Digest::MD5.hexdigest(remote_ip.to_s)
-        bucket = @token_bucket.increment_and_return_bucket(bucket_key, Time.now)
+        bucket = @token_bucket.increment(bucket_key)
 
         env['action_limiter.ip_bucket'] = bucket
 
