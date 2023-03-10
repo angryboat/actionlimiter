@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
     Redis backed token bucket rate limting implementation.
   END_DESC
 
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.7')
+  spec.required_ruby_version = Gem::Requirement.new('>= 3.1')
 
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
   spec.metadata['rubygems_mfa_required'] = 'true'
@@ -29,6 +29,4 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'connection_pool', '>= 2.0', '< 3.0'
   spec.add_dependency 'redis',           '>= 4.0', '< 5.0'
-
-  spec.add_development_dependency 'pry'
 end

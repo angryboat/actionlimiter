@@ -18,7 +18,7 @@ RSpec.describe ActionLimiter::Middleware::IP do
   let(:response_builder) { double('response_builder') }
 
   let(:instance) do
-    described_class.new(app, response_builder: response_builder, period: 1, size: 1)
+    described_class.new(app, response_builder:, period: 1, size: 1)
   end
 
   before do
