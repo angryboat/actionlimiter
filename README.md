@@ -11,7 +11,7 @@ gem install actionlimiter
 ```
 
 ```shell
-bundler add actionlimiter
+bundle add actionlimiter
 ```
 
 ## Usage

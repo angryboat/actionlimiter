@@ -64,9 +64,7 @@ module ActionLimiter
     # @return [void]
     def delete(bucket)
       ActionLimiter.instrument('action_limiter.token_bucket.reset') do
-        ActionLimiter.with_redis_connection do |connection|
-          connection.del(bucket_key(bucket))
-        end
+        ActionLimiter.redis.call('DEL', bucket_key(bucket))
       end
     end
 
@@ -74,19 +72,15 @@ module ActionLimiter
     # @private
     def increment_and_return_bucket(bucket, time)
       ActionLimiter.instrument('action_limiter.token_bucket.increment') do
-        ActionLimiter.with_redis_connection do |connection|
-          value = connection.evalsha(script_hash, [bucket_key(bucket)], [period.to_s, time.to_f.to_s])
-          Bucket.new(name: bucket, value:, max_size: size, period:)
-        end
+        value = ActionLimiter.redis.call('EVALSHA', script_hash, 1, bucket_key(bucket), period.to_s, time.to_f.to_s)
+        Bucket.new(name: bucket, value:, max_size: size, period:)
       end
     end
 
     private
 
     def script_hash
-      @script_hash ||= ActionLimiter.with_redis_connection do |connection|
-        connection.script(:load, ActionLimiter::SCRIPTS.fetch(:token_bucket))
-      end
+      @script_hash ||= ActionLimiter.redis.call('SCRIPT', 'LOAD', ActionLimiter::SCRIPTS.fetch(:token_bucket))
     end
 
     def bucket_key(bucket)
