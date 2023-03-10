@@ -76,7 +76,7 @@ module ActionLimiter
       ActionLimiter.instrument('action_limiter.token_bucket.increment') do
         ActionLimiter.with_redis_connection do |connection|
           value = connection.evalsha(script_hash, [bucket_key(bucket)], [period.to_s, time.to_f.to_s])
-          Bucket.new(name: bucket, value: value, max_size: size, period: period)
+          Bucket.new(name: bucket, value:, max_size: size, period:)
         end
       end
     end
