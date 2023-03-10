@@ -17,7 +17,8 @@ module ActionLimiter
     # @attr_reader [String] name A string representing the name of the bucket.
     # @attr_reader [Integer] value An integer representing the current value of the bucket.
     # @attr_reader [Integer] max_size An integer representing the maximum value of the bucket.
-    # @attr_reader [Integer] period An integer representing the period (in seconds) for which the bucket should retain its value.
+    # @attr_reader [Integer] period An integer representing the period (in seconds)
+    #   for which the bucket should retain its value.
     #
     # @example Checking if a bucket is limited
     #   # Increment the "user:1" bucket and get its value
