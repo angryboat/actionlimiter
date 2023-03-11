@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'action_limiter/token_bucket'
+require 'rack'
 require 'digest'
 
 module ActionLimiter
@@ -38,9 +39,14 @@ module ActionLimiter
 
       ##
       # @private
+      TOKEN_BUCKET_ENV_KEY = 'action_limiter.ip_bucket'
+
+      ##
+      # @private
       def initialize(app, options = {})
         @app = app
         @response_builder = options.fetch(:response_builder) { ResponseBuilder.new }
+        @exclusion_list = Array(options[:exclusions])
         @token_bucket = ActionLimiter::TokenBucket.new(
           period: options.fetch(:period, 1),
           size: options.fetch(:size, 100),
@@ -61,24 +67,35 @@ module ActionLimiter
       private
 
       def _call(env)
-        remote_ip = env.fetch('action_dispatch.remote_ip')
-        bucket_key = Digest::MD5.hexdigest(remote_ip.to_s)
-        bucket = @token_bucket.increment(bucket_key)
+        request = ::Rack::Request.new(env)
 
-        env['action_limiter.ip_bucket'] = bucket
+        return @app.call(env) if path_excluded?(request.path)
 
-        if bucket.value > @token_bucket.size
+        bucket = increment_bucket_for_addr(request.ip)
+
+        env[TOKEN_BUCKET_ENV_KEY] = bucket
+
+        if bucket.limited?
           @response_builder.call(env)
         else
           @app.call(env)
         end
       end
 
+      def increment_bucket_for_addr(ip)
+        bucket_key = Digest::MD5.hexdigest(ip.to_s)
+        @token_bucket.increment(bucket_key)
+      end
+
+      def path_excluded?(path)
+        @exclusion_list.any? { |e| e.match?(path) }
+      end
+
       def create_rate_limit_headers(env)
-        bucket = env.fetch('action_limiter.ip_bucket')
+        return {} unless env.key?(TOKEN_BUCKET_ENV_KEY)
 
         {
-          'X-Request-Count' => bucket.value.to_s,
+          'X-Request-Count' => env[TOKEN_BUCKET_ENV_KEY].value.to_s,
           'X-Request-Period' => @token_bucket.period.to_s,
           'X-Request-Limit' => @token_bucket.size.to_s
         }
